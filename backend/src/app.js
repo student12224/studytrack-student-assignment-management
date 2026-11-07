@@ -51,17 +51,25 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// 8. API routes
+app.use(helmet());
+
+app.use(corsMiddleware);
+
+app.use(express.json({ limit: "10kb" }));
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+
+app.use(cookieParser());
+
+// API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-// 9. Handle undefined routes
+// Not found must be after all routes
 app.use(notFound);
 
-// 10. Centralised error handling
 app.use(errorHandler);
 
 export default app;
