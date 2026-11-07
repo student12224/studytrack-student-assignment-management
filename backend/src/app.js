@@ -1,75 +1,40 @@
 
-import express from "express";
-import helmet from "helmet";
-import cookieParser from "cookie-parser";
-import morgan from "morgan";
+import cors from "cors";
 
-import corsMiddleware from "./config/cors.js";
+const allowedOrigins = (process.env.CLIENT_URL || "")
+  .split(",")
+  .map((url) => url.trim().replace(/\/$/, ""))
+  .filter(Boolean);
 
-import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
-import assignmentRoutes from "./routes/assignmentRoutes.js";
-import dashboardRoutes from "./routes/dashboardRoutes.js";
-import notificationRoutes from "./routes/notificationRoutes.js";
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
 
-import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+    console.error("CORS blocked origin:", origin);
+    return callback(new Error("Origin not allowed by CORS"));
+  },
 
-const app = express();
+  credentials: true,
 
-// 1. Security middleware
-app.use(helmet());
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS"
+  ],
 
-// 2. CORS configuration
-app.use(corsMiddleware);
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization"
+  ],
 
-// 3. Request body parsing
-app.use(express.json({ limit: "10kb" }));
-app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+  optionsSuccessStatus: 204
+};
 
-// 4. Cookie parsing
-app.use(cookieParser());
+const corsMiddleware = cors(corsOptions);
 
-// 5. HTTP request logging
-if (process.env.NODE_ENV !== "test") {
-  app.use(morgan("dev"));
-}
-
-// 6. Root health check
-app.get("/", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "StudyTrack API is running",
-  });
-});
-
-// 7. API health check
-app.get("/api/health", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "StudyTrack API is running successfully.",
-    timestamp: new Date().toISOString(),
-  });
-});
-
-app.use(helmet());
-
-app.use(corsMiddleware);
-
-app.use(express.json({ limit: "10kb" }));
-app.use(express.urlencoded({ extended: true, limit: "10kb" }));
-
-app.use(cookieParser());
-
-// API routes
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/assignments", assignmentRoutes);
-app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/notifications", notificationRoutes);
-
-// Not found must be after all routes
-app.use(notFound);
-
-app.use(errorHandler);
-
-export default app;
+export default corsMiddleware;
