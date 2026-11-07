@@ -6,11 +6,10 @@ const cookieName = process.env.COOKIE_NAME || "studytrack_token";
 const getCookieOptions = () => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   maxAge: 24 * 60 * 60 * 1000,
   path: "/",
 });
-
 export const register = asyncHandler(async (req, res) => {
   const { user, token } = await authService.registerUser(req.body);
 
@@ -39,7 +38,7 @@ export const logout = asyncHandler(async (req, res) => {
   res.clearCookie(cookieName, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     path: "/",
   });
 
