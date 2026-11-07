@@ -1,3 +1,4 @@
+
 import express from "express";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
@@ -33,7 +34,15 @@ if (process.env.NODE_ENV !== "test") {
   app.use(morgan("dev"));
 }
 
-// 6. Health check endpoint
+// 6. Root health check
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "StudyTrack API is running",
+  });
+});
+
+// 7. API health check
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
@@ -42,22 +51,17 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// 7. API routes
+// 8. API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-// 8. Handle undefined routes
+// 9. Handle undefined routes
 app.use(notFound);
-app.get("/", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "StudyTrack API is running",
-  });
-});
-// 9. Centralised error handling
+
+// 10. Centralised error handling
 app.use(errorHandler);
 
 export default app;
