@@ -1,40 +1,70 @@
 
-import cors from "cors";
+import express from "express";
+import helmet from "helmet";
+import cookieParser from "cookie-parser";
+import morgan from "morgan";
 
-const allowedOrigins = (process.env.CLIENT_URL || "")
-  .split(",")
-  .map((url) => url.trim().replace(/\/$/, ""))
-  .filter(Boolean);
+import corsMiddleware from "./config/cors.js";
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import assignmentRoutes from "./routes/assignmentRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
-    console.error("CORS blocked origin:", origin);
-    return callback(new Error("Origin not allowed by CORS"));
-  },
+import {
+  notFound,
+  errorHandler
+} from "./middleware/errorMiddleware.js";
 
-  credentials: true,
+const app = express();
 
-  methods: [
-    "GET",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
-    "OPTIONS"
-  ],
+// 1. Security middleware
+app.use(helmet());
 
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization"
-  ],
+// 2. CORS middleware
+app.use(corsMiddleware);
 
-  optionsSuccessStatus: 204
-};
+// 3. Request body parsing
+app.use(express.json({ limit: "10kb" }));
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
-const corsMiddleware = cors(corsOptions);
+// 4. Cookie parsing
+app.use(cookieParser());
 
-export default corsMiddleware;
+// 5. HTTP request logging
+if (process.env.NODE_ENV !== "test") {
+  app.use(morgan("dev"));
+}
+
+// 6. Root health check
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "StudyTrack API is running"
+  });
+});
+
+// 7. API health check
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "StudyTrack API is running successfully.",
+    timestamp: new Date().toISOString()
+  });
+});
+
+// 8. API routes
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/assignments", assignmentRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/notifications", notificationRoutes);
+
+// 9. Handle undefined routes
+app.use(notFound);
+
+// 10. Centralised error handling
+app.use(errorHandler);
+
+export default app;
