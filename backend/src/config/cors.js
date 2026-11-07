@@ -1,17 +1,19 @@
+
 import cors from "cors";
 
 const allowedOrigins = (process.env.CLIENT_URL || "")
   .split(",")
-  .map((url) => url.trim())
+  .map((url) => url.trim().replace(/\/$/, ""))
   .filter(Boolean);
 
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS blocked origin: ${origin}`));
+      return callback(null, true);
     }
+
+    console.error("CORS blocked origin:", origin);
+    return callback(new Error("Origin not allowed by CORS"));
   },
 
   credentials: true,
