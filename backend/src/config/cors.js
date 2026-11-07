@@ -1,24 +1,38 @@
 import cors from "cors";
 
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
+const allowedOrigins = (process.env.CLIENT_URL || "")
   .split(",")
-  .map((origin) => origin.trim());
+  .map((url) => url.trim())
+  .filter(Boolean);
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests without an Origin header, such as Postman or server-to-server calls.
     if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked origin: ${origin}`));
     }
-
-    return callback(new Error("Not allowed by CORS"));
   },
 
   credentials: true,
 
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS"
+  ],
 
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization"
+  ],
+
+  optionsSuccessStatus: 204
 };
 
-export default cors(corsOptions);
+const corsMiddleware = cors(corsOptions);
+
+export default corsMiddleware;
