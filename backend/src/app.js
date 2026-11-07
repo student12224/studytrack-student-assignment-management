@@ -51,7 +51,12 @@ app.use("/api/notifications", notificationRoutes);
 
 // 8. Handle undefined routes
 app.use(notFound);
-
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "StudyTrack API is running",
+  });
+});
 // 9. Centralised error handling
 app.use(errorHandler);
 
