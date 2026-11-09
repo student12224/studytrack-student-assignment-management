@@ -1,8 +1,6 @@
+
 import express from "express";
-import {
-  validateAssignment,
-  validateAssignmentUpdate
-} from "../validators/assignmentValidators.js";
+
 import {
   createAssignment,
   getAssignments,
@@ -13,28 +11,29 @@ import {
 
 import protect from "../middleware/authMiddleware.js";
 
-import { validateAssignment } from "../validators/assignmentValidators.js";
+import {
+  validateAssignment,
+  validateAssignmentUpdate,
+} from "../validators/assignmentValidators.js";
 
 const router = express.Router();
 
 // All assignment routes require authentication
 router.use(protect);
 
-// Create assignment
+// Create a new assignment
 router.post("/", validateAssignment, createAssignment);
 
 // Retrieve all assignments
 router.get("/", getAssignments);
-router.post("/", protect, validateAssignment, createAssignment);
 
-router.put("/:id", protect, validateAssignmentUpdate, updateAssignment);
-// Retrieve one assignment
+// Retrieve a single assignment
 router.get("/:id", getAssignmentById);
 
-// Update assignment
-router.put("/:id", validateAssignment, updateAssignment);
+// Update an existing assignment
+router.put("/:id", validateAssignmentUpdate, updateAssignment);
 
-// Delete assignment
+// Delete an assignment
 router.delete("/:id", deleteAssignment);
 
 export default router;
