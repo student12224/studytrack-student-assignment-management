@@ -69,16 +69,29 @@ export const updateAssignment = async (userId, assignmentId, updateData) => {
     }
   }
 
+  // Validate assignment status
+  const validStatuses = ["pending", "in-progress", "completed"];
+
+  if (
+    filteredData.status !== undefined &&
+    !validStatuses.includes(filteredData.status)
+  ) {
+    throw new ApiError(
+      400,
+      "Invalid assignment status. Use pending, in-progress or completed."
+    );
+  }
+
   const assignment = await Assignment.findOneAndUpdate(
     {
       _id: assignmentId,
       user: userId,
     },
-    filteredData,
+    { $set: filteredData },
     {
       new: true,
       runValidators: true,
-    },
+    }
   );
 
   if (!assignment) {
@@ -87,7 +100,6 @@ export const updateAssignment = async (userId, assignmentId, updateData) => {
 
   return assignment;
 };
-
 export const deleteAssignment = async (userId, assignmentId) => {
   const assignment = await Assignment.findOneAndDelete({
     _id: assignmentId,
