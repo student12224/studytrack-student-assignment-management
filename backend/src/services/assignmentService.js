@@ -69,34 +69,18 @@ export const updateAssignment = async (userId, assignmentId, updateData) => {
     }
   }
 
-  // Validate assignment status
-  const validStatuses = ["pending", "in-progress", "completed"];
-
-  if (
-    filteredData.status !== undefined &&
-    !validStatuses.includes(filteredData.status)
-  ) {
-    throw new ApiError(
-      400,
-      "Invalid assignment status. Use pending, in-progress or completed."
-    );
-  }
-
-  const assignment = await Assignment.findOneAndUpdate(
-    {
-      _id: assignmentId,
-      user: userId,
-    },
-    { $set: filteredData },
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+  const assignment = await Assignment.findOne({
+    _id: assignmentId,
+    user: userId,
+  });
 
   if (!assignment) {
     throw new ApiError(404, "Assignment not found.");
   }
+
+  Object.assign(assignment, filteredData);
+
+  await assignment.save();
 
   return assignment;
 };
