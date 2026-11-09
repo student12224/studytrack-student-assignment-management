@@ -13,7 +13,18 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+api.interceptors.response.use(
+  response => response,
+  error => {
+    error.userMessage =
+      error.response?.data?.details?.join(", ") ||
+      error.response?.data?.message ||
+      error.message ||
+      "The request could not be completed.";
 
+    return Promise.reject(error);
+  }
+);
 export const unwrap = response => response?.data?.data ?? response?.data ?? {};
 export const getErrorMessage = error => error?.userMessage || error?.response?.data?.message || "Something went wrong.";
 export default api;
