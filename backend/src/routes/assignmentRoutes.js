@@ -1,5 +1,8 @@
 import express from "express";
-
+import {
+  validateAssignment,
+  validateAssignmentUpdate
+} from "../validators/assignmentValidators.js";
 import {
   createAssignment,
   getAssignments,
