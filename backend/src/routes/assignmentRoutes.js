@@ -25,7 +25,9 @@ router.post("/", validateAssignment, createAssignment);
 
 // Retrieve all assignments
 router.get("/", getAssignments);
+router.post("/", protect, validateAssignment, createAssignment);
 
+router.put("/:id", protect, validateAssignmentUpdate, updateAssignment);
 // Retrieve one assignment
 router.get("/:id", getAssignmentById);
 
